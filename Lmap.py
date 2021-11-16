@@ -96,19 +96,9 @@ async def main(ips, file, port_range, output_json, output_url):
             ip_list.append(line.strip('\n'))
     else:
         ip_list = ips.split(',')
-    start_port, end_port = [int(i) for i in port_range.split('-')]
     global result_list
     result_list = []
-    ports_list = []
-    # 把端口分组
-    if (end_port - start_port >= masscan_port_gap):
-        for i in range((end_port - start_port) // masscan_port_gap):
-            ports_list.append(f'{start_port + i * masscan_port_gap}-{start_port + (i + 1) * masscan_port_gap - 1}')
-        ports_list.append(
-            (f'{start_port + ((end_port - start_port) // masscan_port_gap) * masscan_port_gap}-{end_port}'))
-    else:
-        ports_list.append(f'{start_port}-{end_port}')
-    # 把ip分组
+    ports_list=port_range.split(",")
     ip_part_list = [ip_list[i:i + masscan_ip_gap] for i in range(0, len(ip_list), masscan_ip_gap)]
     port_queue = asyncio.Queue()
     sem = asyncio.Semaphore(masscan_concurrent_limit)
@@ -157,7 +147,7 @@ if __name__ == '__main__':
     nmap_concurrent_limit = int(config['Nmap']['ConcurrentLimit'])
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--target', help='请输入ip')
-    parser.add_argument('-p', '--port', help='请输入端口，如1-65535', required=True)
+    parser.add_argument('-p', '--port', help='ports list to use (80,443,8080)', required=True)
     parser.add_argument('-f', '--file', help='请输入文件，每行一个ip')
     parser.add_argument('-oj', '--output-json', help='请输入输出json文件路径')
     parser.add_argument('-ou', '--output-url', help='请输入输出url文件路径')
